@@ -30,7 +30,7 @@ int main(void)
 {
 	srand(time(NULL));
 
-	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "gay attack breaker clone");
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "attack breaker clone thingamajig");
 	SetTargetFPS(60);
 
 	Vector2 mousePosition = { -100.0f, -100.0f };
@@ -47,6 +47,12 @@ int main(void)
 	Rectangle paddle = { 50, 460, 100, 20 };
 
 	Block blocks[256];
+	bool blockSlots[256];
+	int blockCount = 0;
+
+	for (int i = 0; i < 256; i++) {
+		blockSlots[i] = false;
+	}
 
 	int n = 0;
 	for (int x = 0; x < 17; x++) {
@@ -61,6 +67,9 @@ int main(void)
 			blocks[n].type = 1;
 			blocks[n].colour = randomColour();
 			blocks[n].broken = false;
+
+			blockCount++;
+			blockSlots[n] = true;
 
 			n++;
 		}
@@ -82,43 +91,44 @@ int main(void)
 			ballpoint.y = ball.y;
 
 			for (int i = 0; i < 256; i++) {
-				if (!blocks[i].broken && CheckCollisionRecs(ball, blocks[i].rect)) {
+				if (blockSlots[i] && !blocks[i].broken && CheckCollisionRecs(ball, blocks[i].rect)) {
 					blocks[i].broken = true;
+					blockCount--;
 
-					Rectangle bt = {blocks[i].rect.x,blocks[i].rect.y,blocks[i].rect.width,1};
-					Rectangle bb = {blocks[i].rect.x,blocks[i].rect.y+blocks[i].rect.height-1,blocks[i].rect.width,1};
-					Rectangle bl = {blocks[i].rect.x,blocks[i].rect.y,1,blocks[i].rect.height};
-					Rectangle br = {blocks[i].rect.x+blocks[i].rect.width-1,blocks[i].rect.y,1,blocks[i].rect.height};
+					Rectangle bt = {blocks[i].rect.x,blocks[i].rect.y,blocks[i].rect.width,2};
+					Rectangle bb = {blocks[i].rect.x,blocks[i].rect.y+blocks[i].rect.height-2,blocks[i].rect.width,2};
+					Rectangle bl = {blocks[i].rect.x,blocks[i].rect.y,2,blocks[i].rect.height};
+					Rectangle br = {blocks[i].rect.x+blocks[i].rect.width-2,blocks[i].rect.y,2,blocks[i].rect.height};
 
 					if (CheckCollisionRecs(ball, bb)) {
 						if (cos(velAngle) *SPEED > 0) {
-							velAngle += PI/(2+rand()%1);
+							velAngle += PI/2;
 						} else {
-							velAngle -= PI/(2+rand()%1);
+							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
 					}
 					else if (CheckCollisionRecs(ball, bt)) {
 						if (cos(velAngle) *SPEED < 0) {
-							velAngle += PI/(2+rand()%1);
+							velAngle += PI/2;
 						} else {
-							velAngle -= PI/(2+rand()%1);
+							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
 					}
 					else if (CheckCollisionRecs(ball, br)) {
 						if (sin(velAngle) *SPEED < 0) {
-							velAngle += PI/(2+rand()%1);
+							velAngle += PI/2;
 						} else {
-							velAngle -= PI/(2+rand()%1);
+							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
 					}
 					else if (CheckCollisionRecs(ball, bl)) {
 						if (sin(velAngle) *SPEED > 0) {
-							velAngle += PI/(2+rand()%1);
+							velAngle += PI/2;
 						} else {
-							velAngle -= PI/(2+rand()%1);
+							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
 					}
@@ -193,6 +203,11 @@ int main(void)
 		}
 
 		DrawCircle(ball.x+(ball.width/2), ball.y+(ball.height/2), ball.width/2, GRAY);
+
+		DrawText("Bricks left: ", 10, 10, 20, WHITE);
+		char str[6];
+		sprintf(str, "%d", blockCount);
+		DrawText(str, 135, 10, 20, YELLOW);
 
 		EndDrawing();
 	}
