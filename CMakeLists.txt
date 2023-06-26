@@ -5,8 +5,10 @@ set(CMAKE_C_STANDARD 99)
 add_subdirectory(raylib)
 
 include_directories(src/)
-file(GLOB SOURCES "src/*.c")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME}
+	src/main.c
+	src/snd_click.c
+	src/snd_hit.c)
 
 target_link_libraries(${PROJECT_NAME} raylib m)

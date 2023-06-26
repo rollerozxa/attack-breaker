@@ -4,6 +4,9 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "snd_click.h"
+#include "snd_hit.h"
+
 #define SCREEN_WIDTH (854)
 #define SCREEN_HEIGHT (480)
 
@@ -33,6 +36,8 @@ int main(void)
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "attack breaker clone thingamajig");
 	SetTargetFPS(60);
 
+	InitAudioDevice();
+
 	Vector2 mousePosition = { -100.0f, -100.0f };
 
 	Rectangle top		= { 0,-10, SCREEN_WIDTH,10 };
@@ -53,6 +58,13 @@ int main(void)
 	for (int i = 0; i < 256; i++) {
 		blockSlots[i] = false;
 	}
+
+	Wave clickWav = LoadWaveFromMemory(".ogg", snd_click, snd_click_size);
+	Sound clickSnd = LoadSoundFromWave(clickWav);
+	Wave hitWav = LoadWaveFromMemory(".ogg", snd_hit, snd_hit_size);
+	Sound hitSnd = LoadSoundFromWave(hitWav);
+	//Sound clickSnd = LoadSound("../click.ogg");
+	//Sound hitSnd = LoadSound("../hit.ogg");
 
 	int n = 0;
 	for (int x = 0; x < 17; x++) {
@@ -107,6 +119,7 @@ int main(void)
 							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
+						PlaySound(hitSnd);
 					}
 					else if (CheckCollisionRecs(ball, bt)) {
 						if (cos(velAngle) *SPEED < 0) {
@@ -115,6 +128,7 @@ int main(void)
 							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
+						PlaySound(hitSnd);
 					}
 					else if (CheckCollisionRecs(ball, br)) {
 						if (sin(velAngle) *SPEED < 0) {
@@ -123,6 +137,7 @@ int main(void)
 							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
+						PlaySound(hitSnd);
 					}
 					else if (CheckCollisionRecs(ball, bl)) {
 						if (sin(velAngle) *SPEED > 0) {
@@ -131,6 +146,7 @@ int main(void)
 							velAngle -= PI/2;
 						}
 						cooldownCollision = 0;
+						PlaySound(hitSnd);
 					}
 				}
 			}
@@ -142,7 +158,7 @@ int main(void)
 				} else {
 					velAngle -= PI/(2+rand()%1);
 				}
-				//printf("%f\n", velAngle/PI);
+				PlaySound(clickSnd);
 			}
 			if (CheckCollisionRecs(ball, bottom) && cooldownCollision != 2) {
 				cooldownCollision = 2;
@@ -151,7 +167,7 @@ int main(void)
 				} else {
 					velAngle -= PI/(2+rand()%1);
 				}
-				//printf("%f\n", velAngle/PI);
+				PlaySound(clickSnd);
 			}
 			if (CheckCollisionRecs(ball, left) && cooldownCollision != 3) {
 				cooldownCollision = 3;
@@ -160,7 +176,7 @@ int main(void)
 				} else {
 					velAngle -= PI/(2+rand()%1);
 				}
-				//printf("%f\n", velAngle/PI);
+				PlaySound(clickSnd);
 			}
 			if (CheckCollisionRecs(ball, right) && cooldownCollision != 4) {
 				cooldownCollision = 4;
@@ -169,7 +185,7 @@ int main(void)
 				} else {
 					velAngle -= PI/(2+rand()%1);
 				}
-				//printf("%f\n", velAngle/PI);
+				PlaySound(clickSnd);
 			}
 			if (CheckCollisionRecs(ball, paddle) && cooldownCollision != 5) {
 				cooldownCollision = 5;
@@ -178,7 +194,7 @@ int main(void)
 				} else {
 					velAngle -= PI/(2+rand()%1);
 				}
-				//printf("%f\n", velAngle/PI);
+				PlaySound(clickSnd);
 			}
 
 			/*if (CheckCollisionRecs(ball, top)
