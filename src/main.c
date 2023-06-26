@@ -15,11 +15,11 @@ typedef struct Block {
 } Block;
 
 Color randomColour() {
-	int i = rand() % 5;
+	int i = GetRandomValue(0, 5);
 	switch (i) {
 		case 0: return YELLOW;
 		case 1: return RED;
-		case 2: return GOLD;
+		case 2: return ORANGE;
 		case 3: return BLUE;
 		case 4: return LIME;
 		case 5: return DARKPURPLE;
@@ -28,7 +28,7 @@ Color randomColour() {
 
 int main(void)
 {
-	srand(time(NULL));
+	SetRandomSeed(time(NULL));
 
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "attack breaker clone thingamajig");
 	SetTargetFPS(60);
