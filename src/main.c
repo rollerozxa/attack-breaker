@@ -55,6 +55,8 @@ int main(void)
 	bool blockSlots[256];
 	int blockCount = 0;
 
+	int state = 0;
+
 	for (int i = 0; i < 256; i++) {
 		blockSlots[i] = false;
 	}
@@ -89,141 +91,167 @@ int main(void)
 
 	int cooldownCollision = 0;
 
+	bool hoveringPlayButton = false;
+
 	while (!WindowShouldClose()) {
-		for (int i = 0; i < 16; i++) {
+
+		if (state == 0) {
 
 			mousePosition = GetMousePosition();
-			paddle.x = mousePosition.x - paddle.width/2;
 
-			#define SPEED 8/16
+			hoveringPlayButton = (mousePosition.x > 330 && mousePosition.x < 330+165 && mousePosition.y > 190 && mousePosition.y < 190+60);
+			if (hoveringPlayButton && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				state = 1;
+			}
 
-			ball.x += cos(velAngle) *SPEED;
-			ball.y += sin(velAngle) *SPEED;
-			ballpoint.x = ball.x;
-			ballpoint.y = ball.y;
+		} else if (state == 1) {
+			for (int i = 0; i < 16; i++) {
 
-			for (int i = 0; i < 256; i++) {
-				if (blockSlots[i] && !blocks[i].broken && CheckCollisionRecs(ball, blocks[i].rect)) {
-					blocks[i].broken = true;
-					blockCount--;
+				mousePosition = GetMousePosition();
+				paddle.x = mousePosition.x - paddle.width/2;
 
-					Rectangle bt = {blocks[i].rect.x,blocks[i].rect.y,blocks[i].rect.width,2};
-					Rectangle bb = {blocks[i].rect.x,blocks[i].rect.y+blocks[i].rect.height-2,blocks[i].rect.width,2};
-					Rectangle bl = {blocks[i].rect.x,blocks[i].rect.y,2,blocks[i].rect.height};
-					Rectangle br = {blocks[i].rect.x+blocks[i].rect.width-2,blocks[i].rect.y,2,blocks[i].rect.height};
+				#define SPEED 8/16
 
-					if (CheckCollisionRecs(ball, bb)) {
-						if (cos(velAngle) *SPEED > 0) {
-							velAngle += PI/2;
-						} else {
-							velAngle -= PI/2;
+				ball.x += cos(velAngle) *SPEED;
+				ball.y += sin(velAngle) *SPEED;
+				ballpoint.x = ball.x;
+				ballpoint.y = ball.y;
+
+				for (int i = 0; i < 256; i++) {
+					if (blockSlots[i] && !blocks[i].broken && CheckCollisionRecs(ball, blocks[i].rect)) {
+						blocks[i].broken = true;
+						blockCount--;
+
+						Rectangle bt = {blocks[i].rect.x,blocks[i].rect.y,blocks[i].rect.width,2};
+						Rectangle bb = {blocks[i].rect.x,blocks[i].rect.y+blocks[i].rect.height-2,blocks[i].rect.width,2};
+						Rectangle bl = {blocks[i].rect.x,blocks[i].rect.y,2,blocks[i].rect.height};
+						Rectangle br = {blocks[i].rect.x+blocks[i].rect.width-2,blocks[i].rect.y,2,blocks[i].rect.height};
+
+						if (CheckCollisionRecs(ball, bb)) {
+							if (cos(velAngle) *SPEED > 0) {
+								velAngle += PI/2;
+							} else {
+								velAngle -= PI/2;
+							}
+							cooldownCollision = 0;
+							PlaySound(hitSnd);
 						}
-						cooldownCollision = 0;
-						PlaySound(hitSnd);
-					}
-					else if (CheckCollisionRecs(ball, bt)) {
-						if (cos(velAngle) *SPEED < 0) {
-							velAngle += PI/2;
-						} else {
-							velAngle -= PI/2;
+						else if (CheckCollisionRecs(ball, bt)) {
+							if (cos(velAngle) *SPEED < 0) {
+								velAngle += PI/2;
+							} else {
+								velAngle -= PI/2;
+							}
+							cooldownCollision = 0;
+							PlaySound(hitSnd);
 						}
-						cooldownCollision = 0;
-						PlaySound(hitSnd);
-					}
-					else if (CheckCollisionRecs(ball, br)) {
-						if (sin(velAngle) *SPEED < 0) {
-							velAngle += PI/2;
-						} else {
-							velAngle -= PI/2;
+						else if (CheckCollisionRecs(ball, br)) {
+							if (sin(velAngle) *SPEED < 0) {
+								velAngle += PI/2;
+							} else {
+								velAngle -= PI/2;
+							}
+							cooldownCollision = 0;
+							PlaySound(hitSnd);
 						}
-						cooldownCollision = 0;
-						PlaySound(hitSnd);
-					}
-					else if (CheckCollisionRecs(ball, bl)) {
-						if (sin(velAngle) *SPEED > 0) {
-							velAngle += PI/2;
-						} else {
-							velAngle -= PI/2;
+						else if (CheckCollisionRecs(ball, bl)) {
+							if (sin(velAngle) *SPEED > 0) {
+								velAngle += PI/2;
+							} else {
+								velAngle -= PI/2;
+							}
+							cooldownCollision = 0;
+							PlaySound(hitSnd);
 						}
-						cooldownCollision = 0;
-						PlaySound(hitSnd);
 					}
 				}
-			}
 
-			if (CheckCollisionRecs(ball, top) && cooldownCollision != 1) {
-				cooldownCollision = 1;
-				if (cos(velAngle) *SPEED > 0) {
-					velAngle += PI/(2+rand()%1);
-				} else {
-					velAngle -= PI/(2+rand()%1);
+				if (CheckCollisionRecs(ball, top) && cooldownCollision != 1) {
+					cooldownCollision = 1;
+					if (cos(velAngle) *SPEED > 0) {
+						velAngle += PI/(2+rand()%1);
+					} else {
+						velAngle -= PI/(2+rand()%1);
+					}
+					PlaySound(clickSnd);
 				}
-				PlaySound(clickSnd);
-			}
-			if (CheckCollisionRecs(ball, bottom) && cooldownCollision != 2) {
-				cooldownCollision = 2;
-				if (cos(velAngle) *SPEED < 0) {
-					velAngle += PI/(2+rand()%1);
-				} else {
-					velAngle -= PI/(2+rand()%1);
+				if (CheckCollisionRecs(ball, bottom) && cooldownCollision != 2) {
+					cooldownCollision = 2;
+					if (cos(velAngle) *SPEED < 0) {
+						velAngle += PI/(2+rand()%1);
+					} else {
+						velAngle -= PI/(2+rand()%1);
+					}
+					PlaySound(clickSnd);
 				}
-				PlaySound(clickSnd);
-			}
-			if (CheckCollisionRecs(ball, left) && cooldownCollision != 3) {
-				cooldownCollision = 3;
-				if (sin(velAngle) *SPEED < 0) {
-					velAngle += PI/(2+rand()%1);
-				} else {
-					velAngle -= PI/(2+rand()%1);
+				if (CheckCollisionRecs(ball, left) && cooldownCollision != 3) {
+					cooldownCollision = 3;
+					if (sin(velAngle) *SPEED < 0) {
+						velAngle += PI/(2+rand()%1);
+					} else {
+						velAngle -= PI/(2+rand()%1);
+					}
+					PlaySound(clickSnd);
 				}
-				PlaySound(clickSnd);
-			}
-			if (CheckCollisionRecs(ball, right) && cooldownCollision != 4) {
-				cooldownCollision = 4;
-				if (sin(velAngle) *SPEED > 0) {
-					velAngle += PI/(2+rand()%1);
-				} else {
-					velAngle -= PI/(2+rand()%1);
+				if (CheckCollisionRecs(ball, right) && cooldownCollision != 4) {
+					cooldownCollision = 4;
+					if (sin(velAngle) *SPEED > 0) {
+						velAngle += PI/(2+rand()%1);
+					} else {
+						velAngle -= PI/(2+rand()%1);
+					}
+					PlaySound(clickSnd);
 				}
-				PlaySound(clickSnd);
-			}
-			if (CheckCollisionRecs(ball, paddle) && cooldownCollision != 5) {
-				cooldownCollision = 5;
-				if (cos(velAngle) *SPEED < 0) {
-					velAngle += PI/(2+rand()%1);
-				} else {
-					velAngle -= PI/(2+rand()%1);
+				if (CheckCollisionRecs(ball, paddle) && cooldownCollision != 5) {
+					cooldownCollision = 5;
+					if (cos(velAngle) *SPEED < 0) {
+						velAngle += PI/(2+rand()%1);
+					} else {
+						velAngle -= PI/(2+rand()%1);
+					}
+					PlaySound(clickSnd);
 				}
-				PlaySound(clickSnd);
-			}
 
-			/*if (CheckCollisionRecs(ball, top)
-			|| CheckCollisionRecs(ball, bottom)
-			|| CheckCollisionRecs(ball, left)
-			|| CheckCollisionRecs(ball, right)
-			|| CheckCollisionRecs(ball, paddle)) {
-				velAngle -= PI/(2+rand()%1);
-			}*/
+				/*if (CheckCollisionRecs(ball, top)
+				|| CheckCollisionRecs(ball, bottom)
+				|| CheckCollisionRecs(ball, left)
+				|| CheckCollisionRecs(ball, right)
+				|| CheckCollisionRecs(ball, paddle)) {
+					velAngle -= PI/(2+rand()%1);
+				}*/
+			}
 		}
 
 		BeginDrawing();
 
 		ClearBackground(BLACK);
 
-		DrawRectangle(paddle.x, paddle.y, paddle.width, paddle.height, GRAY);
+		if (state == 0) {
 
-		for (int i = 0; i < 256; i++) {
-			if (!blocks[i].broken) {
-				DrawRectangle(blocks[i].rect.x, blocks[i].rect.y, blocks[i].rect.width, blocks[i].rect.height, blocks[i].colour);
+			DrawText("Attack Breaker ", 150, 10, 64, YELLOW);
+
+			if (hoveringPlayButton)
+				DrawRectangle(330, 190, 165, 60, DARKGRAY);
+			else
+				DrawRectangle(330, 190, 165, 60, GRAY);
+			DrawText("Play", 370, 200, 40, WHITE);
+
+		} else if (state == 1) {
+			DrawRectangle(paddle.x, paddle.y, paddle.width, paddle.height, GRAY);
+
+			for (int i = 0; i < 256; i++) {
+				if (!blocks[i].broken) {
+					DrawRectangle(blocks[i].rect.x, blocks[i].rect.y, blocks[i].rect.width, blocks[i].rect.height, blocks[i].colour);
+				}
 			}
+
+			DrawCircle(ball.x+(ball.width/2), ball.y+(ball.height/2), ball.width/2, GRAY);
+
+			DrawText("Bricks left: ", 10, 10, 20, WHITE);
+			char str[6];
+			sprintf(str, "%d", blockCount);
+			DrawText(str, 135, 10, 20, YELLOW);
 		}
-
-		DrawCircle(ball.x+(ball.width/2), ball.y+(ball.height/2), ball.width/2, GRAY);
-
-		DrawText("Bricks left: ", 10, 10, 20, WHITE);
-		char str[6];
-		sprintf(str, "%d", blockCount);
-		DrawText(str, 135, 10, 20, YELLOW);
 
 		EndDrawing();
 	}
